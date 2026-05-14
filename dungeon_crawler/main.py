@@ -1,24 +1,117 @@
 import pygame 
 import constants 
 from character import Character
-
+from weapon import Weapon 
 
 pygame.init()
 
 screen = pygame.display.set_mode((constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT))
+pygame.display.set_caption("Dungeon Crawler")
 
-# create player 
-player = Character(100, 100)
 
+clock = pygame.time.Clock()
+
+# define player movement vars 
+moving_left = False
+moving_right = False
+moving_up = False
+moving_down = False
+
+# helper func to scale image 
+def scale_img(image, scale):
+    w = image.get_width()
+    h = image.get_height()
+    return pygame.transform.scale(image, (w*scale, h*scale))
+
+# load weapon images 
+bow_image = scale_img(pygame.image.load("assets/images/weapons/bow.png").convert_alpha(), constants.WEAPON_SCALE)
+arrow_image = scale_img(pygame.image.load("assets/images/weapons/arrow.png").convert_alpha(), constants.WEAPON_SCALE)
+
+
+# load character images 
+mob_animations = []
+mob_types = ["elf", "imp", "skeleton", "goblin", "muddy", "tiny_zombie", "big_demon"]
+
+animation_types = ["idle", "run"]
+for mob in mob_types:
+    # load images 
+    animation_list = []
+    for animation in animation_types:
+        # reset temporary list of images 
+        temp_list = []
+        for i in range(4):
+            img = pygame.image.load(f"assets/images/characters/{mob}/{animation}/{i}.png").convert_alpha()
+            img = scale_img(img, constants.SCALE)
+            temp_list.append(img)
+
+        animation_list.append(temp_list) # list of lists 
+    mob_animations.append(animation_list) 
+
+
+# create elf player 
+player = Character(100, 100, 100, mob_animations, 0) 
+# create enemy 
+enemy = Character(200, 300, 100, mob_animations, 1)
+
+# create player's weapon 
+bow = Weapon(bow_image, arrow_image)
+
+# create empty enemy list 
+enemy_list = []
+enemy_list.append(enemy)
+
+# create sprite groups 
+arrow_group = pygame.sprite.Group()
+
+# main game loop 
 run = True 
 while run:
+
+    # control frame rate 
+    clock.tick(constants.FPS)
+
+    screen.fill(constants.BG)
+
+    # calculate player movement 
+    dx = 0
+    dy = 0 
+
+    keys = pygame.key.get_pressed() # continuous check 
+    dx = (keys[pygame.K_d] - keys[pygame.K_a]) * constants.MOVEMENT_SPEED
+    dy = (keys[pygame.K_s] - keys[pygame.K_w]) * constants.MOVEMENT_SPEED
+
+    player.move(dx, dy)
+
+    for enemy in enemy_list:
+        enemy.update()
+
+    player.update()    
     
+    arrow = bow.update(player)
+    if arrow:
+        arrow_group.add(arrow)
+    for arrow in arrow_group:
+        arrow.update(enemy_list)
+
+    for enemy in enemy_list:
+        enemy.draw(screen)
+
     player.draw(screen)
-    
+    bow.draw(screen)
+    for arrow in arrow_group:
+        arrow.draw(screen)
+
+    print(enemy.health)
+
+
     # event handler 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False 
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                run = False 
+   
     
     pygame.display.update()
     
