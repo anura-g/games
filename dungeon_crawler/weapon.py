@@ -40,7 +40,7 @@ class Weapon():
 
 class Arrow(pygame.sprite.Sprite):
     def __init__(self, image, x, y, angle):
-        pygame.sprite.Sprite.__init__(self)
+        super().__init__()
         self.original_image = image 
         self.angle = angle 
         self.image = pygame.transform.rotate(self.original_image, self.angle - 90)
@@ -51,7 +51,9 @@ class Arrow(pygame.sprite.Sprite):
         self.dy = -(math.sin(math.radians(self.angle)) * constants.ARROW_SPEED)
     
     def update(self, enemy_list):
-
+        # reset vars 
+        damage = 0 
+        damage_pos = None 
         # reposition based on speed 
         self.rect.x += self.dx 
         self.rect.y += self.dy 
@@ -64,9 +66,12 @@ class Arrow(pygame.sprite.Sprite):
         for enemy in enemy_list:
             if enemy.rect.colliderect(self.rect) and enemy.alive:
                 damage = 10 + random.randint(-5, 5)
+                damage_pos = enemy.rect 
                 enemy.health -= damage 
                 self.kill() 
-                break 
+                break
+
+        return damage, damage_pos 
 
     def draw(self, surface):
         surface.blit(self.image, (self.rect.centerx - int(self.image.get_width()/2), (self.rect.centery - int(self.image.get_height() / 2))))
