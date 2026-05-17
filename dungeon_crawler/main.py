@@ -56,6 +56,7 @@ item_images.append(red_potion)
 # load weapon images 
 bow_image = scale_img(pygame.image.load("assets/images/weapons/bow.png").convert_alpha(), constants.WEAPON_SCALE)
 arrow_image = scale_img(pygame.image.load("assets/images/weapons/arrow.png").convert_alpha(), constants.WEAPON_SCALE)
+fireball_image = scale_img(pygame.image.load("assets/images/weapons/fireball.png").convert_alpha(), constants.FIREBALL_SCALE)
 
 # load tile map images 
 tile_list = []
@@ -109,27 +110,19 @@ def draw_info():
     # show score 
     draw_text(f"X{player.score}", font, constants.WHITE, constants.SCREEN_WIDTH - 100, 15)
 
+def reset_level():
+    damage_text_group.empty()
+    arrow_group.empty()
+    item_group.empty()
+    fireball_group.empty()
 
-# create empty tile list 
-world_data = []
-for row in range(constants.ROWS):
-    r = [-1] * constants.COLS
-    world_data.append(r)
- # load level data and create world 
-with open(f"levels/level{level}_data.csv", newline="") as csvfile:
-    reader = csv.reader(csvfile, delimiter=",")
-    for x, row in enumerate(reader): 
-        for y, tile in enumerate(row):
-            world_data[x][y] = int(tile)
-
-
-world = World()
-world.process_data(world_data, tile_list, item_images, mob_animations)
-
-
-
-
-
+    # create empty tile list
+    data = []
+    for row in range(constants.ROWS):
+        r = [-1] * constants.COLS
+        data.append(r) 
+    
+    return data 
 
 # damage text 
 class DamageText(pygame.sprite.Sprite):
@@ -151,7 +144,21 @@ class DamageText(pygame.sprite.Sprite):
         if self.counter > 30:
             self.kill()
 
+# create empty tile list 
+world_data = []
+for row in range(constants.ROWS):
+    r = [-1] * constants.COLS
+    world_data.append(r)
+ # load level data and create world 
+with open(f"levels/level{level}_data.csv", newline="") as csvfile:
+    reader = csv.reader(csvfile, delimiter=",")
+    for x, row in enumerate(reader): 
+        for y, tile in enumerate(row):
+            world_data[x][y] = int(tile)
 
+
+world = World()
+world.process_data(world_data, tile_list, item_images, mob_animations)
 
 # create elf player 
 player = world.player  
@@ -165,6 +172,7 @@ enemy_list = world.character_list
 damage_text_group = pygame.sprite.Group()
 arrow_group = pygame.sprite.Group()
 item_group = pygame.sprite.Group()
+fireball_group = pygame.sprite.Group()
 
 score_coin = Item(constants.SCREEN_WIDTH - 115, 23, 0, coin_images, True)
 item_group.add(score_coin)
@@ -191,15 +199,17 @@ while run:
     dx = (keys[pygame.K_d] - keys[pygame.K_a]) * constants.MOVEMENT_SPEED
     dy = (keys[pygame.K_s] - keys[pygame.K_w]) * constants.MOVEMENT_SPEED
 
-    screen_scroll = player.move(dx, dy, world.obstacle_tiles)
+    screen_scroll, level_complete = player.move(dx, dy, world.obstacle_tiles, world.exit_tile)
     
-
     # UPDATES 
     world.update(screen_scroll)
 
     for enemy in enemy_list:
-        enemy.ai(screen_scroll)
-        enemy.update()
+        fireball = enemy.ai(player, world.obstacle_tiles, screen_scroll, fireball_image)
+        if fireball:
+            fireball_group.add(fireball)
+        if enemy.alive:
+            enemy.update()
 
     player.update()    
     
@@ -207,13 +217,14 @@ while run:
     if arrow:
         arrow_group.add(arrow)
     for arrow in arrow_group:
-        damage, damage_pos = arrow.update(screen_scroll, enemy_list)
+        damage, damage_pos = arrow.update(screen_scroll, world.obstacle_tiles, enemy_list)
         if damage:
             damage_text = DamageText(damage_pos.centerx, damage_pos.y, str(damage), constants.RED)
             damage_text_group.add(damage_text)
-            
+
 
     damage_text_group.update()
+    fireball_group.update(screen_scroll, player)
     item_group.update(screen_scroll, player)
 
     # DRAW
@@ -225,10 +236,38 @@ while run:
     bow.draw(screen)
     for arrow in arrow_group:
         arrow.draw(screen)
+    for fireball in fireball_group:
+        fireball.draw(screen)
     damage_text_group.draw(screen)
+
     item_group.draw(screen)
     draw_info()
     score_coin.draw(screen)
+
+    # check level has been completed 
+    if level_complete == True:
+        level += 1
+        world_data = reset_level()
+        with open(f"levels/level{level}_data.csv", newline="") as csvfile:
+            reader = csv.reader(csvfile, delimiter=",")
+            for x, row in enumerate(reader): 
+                for y, tile in enumerate(row):
+                    world_data[x][y] = int(tile)
+
+        world = World()
+        world.process_data(world_data, tile_list, item_images, mob_animations)
+        tmp_health = player.health 
+        tmp_score = player.score 
+
+        player = world.player 
+        player.health = tmp_health
+        player.score = tmp_score 
+        
+        enemy_list = world.character_list 
+        score_coin = Item(constants.SCREEN_WIDTH - 115, 23, 0, coin_images, True)
+        item_group.add(score_coin)
+        for item in world.item_list:
+            item_group.add(item)
 
 
     # event handler 
