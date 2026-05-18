@@ -5,7 +5,7 @@ FPS = 60
 SCALE = 2
 OFFSET = 40 
 
-GAME_TITLE = "leaguedodger"
+GAME_TITLE = "dodger"
 TILE_SIZE = 32 
 
 
