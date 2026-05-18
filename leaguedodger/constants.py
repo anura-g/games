@@ -1,0 +1,14 @@
+SCREEN_WIDTH = 1200 
+SCREEN_HEIGHT = 800 
+FPS = 60  
+
+SCALE = 2
+OFFSET = 40 
+
+GAME_TITLE = "leaguedodger"
+TILE_SIZE = 32 
+
+
+MOVEMENT_SPEED = 10
+
+BG_COLOR = "green"
