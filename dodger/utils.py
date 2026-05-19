@@ -16,16 +16,16 @@ def load_animation(sheet, frame_width, frame_height, scale):
         frames.append(frame)
     return frames
 
-def load_character_animations():
+def load_character_animations(character, sprite_width, sprite_height, scale):
     animation_types = ["idle", "run"]
-    character_types = ["player"]
+    character_types = [character]
 
     character_animations = []
     for character in character_types:
         animation_list = []
         for animation in animation_types:
             sheet = pygame.image.load(f"assets/images/characters/{character}/{animation}.png").convert_alpha()
-            frames = load_animation(sheet, 100, 100, 2) 
+            frames = load_animation(sheet, sprite_width, sprite_height, scale) 
             animation_list.append(frames)
         character_animations.append(animation_list)
     

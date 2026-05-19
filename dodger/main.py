@@ -12,9 +12,13 @@ pygame.display.set_caption(c.GAME_TITLE)
 
 clock = pygame.time.Clock() 
 
-character_animations = load_character_animations()
+player_animations = load_character_animations("player", 100, 100, 2)
+fly_animations = load_character_animations("fly", 64, 64, 2) 
 
-player = Character(1*c.TILE_SIZE, 1*c.TILE_SIZE, character_animations, 0, c.SCALE)
+
+player = Character(15*c.TILE_SIZE, 10*c.TILE_SIZE, player_animations, 0, c.SCALE)
+fly = Character(1*c.TILE_SIZE, 3*c.TILE_SIZE, fly_animations, 0, c.SCALE) 
+
 
 running = True
 while running: 
@@ -27,11 +31,17 @@ while running:
     dy = (keys[pygame.K_s] - keys[pygame.K_w]) * c.MOVEMENT_SPEED
     
     player.move(dx, dy)
+    fly.float(speed=2, mode="horizontal")
+
     player.update()
+    fly.update()
+
 
     # Draw 
     screen.blit(background, (0, 0))
     player.draw(screen)
+    fly.draw(screen)
+
 
     for x in range(1, c.SCREEN_WIDTH // c.TILE_SIZE):
         pygame.draw.line(screen, "white", (0, c.SCREEN_HEIGHT // c.TILE_SIZE * x), (c.SCREEN_WIDTH, c.SCREEN_HEIGHT // c.TILE_SIZE * x))

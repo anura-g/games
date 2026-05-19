@@ -13,13 +13,13 @@ class Character():
         self.action = 0; # 0:idle, 1:run
         self.image = self.animation_list[self.action][self.frame_index]
         self.rect = pygame.Rect(x, y, c.TILE_SIZE * size, 40 * size)
+        self.float_direction = 1 
     
     def move(self, dx, dy):
         self.running = False 
 
         if dx!=0 or dy!=0:
             self.running = True 
-        
         if dx<0:
             self.flip = True 
         if dx>0:
@@ -34,9 +34,44 @@ class Character():
             self.rect.x += dx 
             self.rect.y += dy 
 
+
+    def float(self, speed, mode=("vertical", "horizontal")):
+        max_y = c.SCREEN_HEIGHT - 100 
+        min_y = 100
+
+        max_x = c.SCREEN_WIDTH - 200
+        min_x = 100
+
+        if mode == "vertical":
+            self.rect.y += speed * self.float_direction
+
+            if self.rect.y >= max_y:
+                self.rect.y = max_y 
+                self.flip = True
+                self.float_direction = -1 
+            elif self.rect.y <= min_y:
+                self.rect.y = min_y 
+                self.float_direction = 1
+                self.flip = False 
+        
+        elif mode == "horizontal":
+            self.rect.x += speed * self.float_direction
+            if self.rect.x >= max_x:
+                self.rect.x = max_x 
+                self.float_direction = -1 
+                self.flip = False 
+            elif self.rect.x <= min_x:
+                self.rect.x = min_x 
+                self.float_direction = 1
+                self.flip = True         
+
+
+
+        
+
+
     def update(self):
 
-    
         # Handle animation
         if self.running == True:
             self.update_action(1) # run 
