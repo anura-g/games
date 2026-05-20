@@ -56,6 +56,11 @@ while running:
     screen.blit(background, (0, 0))
     player.draw(screen)
     fly.draw(screen)
+    # health 
+    # draw health
+    font = pygame.font.SysFont("Arial", 30)
+    health_text = font.render(f"HP: {player.health}", True, "white")
+    screen.blit(health_text, (10, 10))
 
     for fireball in fireball_group:
         fireball.draw(screen)
@@ -63,8 +68,6 @@ while running:
     for x in range(1, c.SCREEN_WIDTH // c.TILE_SIZE):
         pygame.draw.line(screen, "white", (0, c.SCREEN_HEIGHT // c.TILE_SIZE * x), (c.SCREEN_WIDTH, c.SCREEN_HEIGHT // c.TILE_SIZE * x))
         pygame.draw.line(screen, "white", (c.SCREEN_WIDTH // c.TILE_SIZE * x, 0), (c.SCREEN_WIDTH // c.TILE_SIZE * x, c.SCREEN_HEIGHT))
-
-    
 
     # Event Handler 
     for event in pygame.event.get():

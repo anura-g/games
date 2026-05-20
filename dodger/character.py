@@ -40,7 +40,9 @@ class Character():
         if self.char_type == 0:
             self.rect.x += dx 
             self.rect.y += dy 
-
+            # keep characters within screen 
+            self.rect.x = max(0, min(self.rect.x, c.SCREEN_WIDTH - self.image.get_width()))
+            self.rect.y = max(0, min(self.rect.y, c.SCREEN_HEIGHT - self.image.get_height()))
 
     def float(self, speed, mode=("vertical", "horizontal")):
         max_y = c.SCREEN_HEIGHT - 100 
