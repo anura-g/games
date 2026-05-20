@@ -1,9 +1,10 @@
 import math 
 import pygame 
+import projectiles 
 import constants as c 
 
 class Character():
-    def __init__(self, x, y, animation_list, char_type, size):
+    def __init__(self, x, y, health, animation_list, char_type, size):
         self.char_type = char_type 
         self.running = False  
         self.flip = False 
@@ -14,6 +15,12 @@ class Character():
         self.image = self.animation_list[self.action][self.frame_index]
         self.rect = pygame.Rect(x, y, c.TILE_SIZE * size, 40 * size)
         self.float_direction = 1 
+        self.hit = False 
+        self.alive = True 
+        # self.last_hit = pygame.time.get_ticks()
+        self.last_attack = pygame.time.get_ticks()
+        self.health = health 
+        
     
     def move(self, dx, dy):
         self.running = False 
@@ -54,7 +61,7 @@ class Character():
                 self.float_direction = 1
                 self.flip = False 
         
-        elif mode == "horizontal":
+        if mode == "horizontal":
             self.rect.x += speed * self.float_direction
             if self.rect.x >= max_x:
                 self.rect.x = max_x 
@@ -67,10 +74,23 @@ class Character():
 
 
 
+    def attack(self, projectile_image, player):
+        if self.alive:
+            attack_cooldown = 500 
+            projectile = None 
+            if pygame.time.get_ticks() - self.last_attack >= attack_cooldown:
+                projectile = projectiles.Projectile(projectile_image, self.rect.centerx, self.rect.centery, player.rect.centerx, player.rect.centery)
+                self.last_attack = pygame.time.get_ticks()   
         
+
+        return projectile 
 
 
     def update(self):
+
+        if self.health <= 0:
+            self.health = 0
+            self.alive = False 
 
         # Handle animation
         if self.running == True:
